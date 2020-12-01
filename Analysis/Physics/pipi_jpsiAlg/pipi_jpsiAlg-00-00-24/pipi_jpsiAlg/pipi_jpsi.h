@@ -92,6 +92,20 @@ private:
   NTuple::Array<double> p4_lm;
   NTuple::Array<double> p4_pip;
   NTuple::Array<double> p4_pim;
+
+  NTuple::Item<double>  m_Vr_pionp;
+  NTuple::Item<double>  m_Vr_pionm;
+  NTuple::Item<double>  m_Vr_lepp;
+  NTuple::Item<double>  m_Vr_lepm;
+  NTuple::Item<double>  m_Vz_pionp;
+  NTuple::Item<double>  m_Vz_pionm;
+  NTuple::Item<double>  m_Vz_lepp;
+  NTuple::Item<double>  m_Vz_lepm;
+  NTuple::Item<double>  m_cos_pionp;
+  NTuple::Item<double>  m_cos_pionm;
+  NTuple::Item<double>  m_cos_lepp;
+  NTuple::Item<double>  m_cos_lepm;
+
   // for sys error
   NTuple::Item<double> m_chi2_svf;
   NTuple::Item<double> m_ctau_svf;

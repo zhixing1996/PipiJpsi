@@ -39,12 +39,10 @@ def check_outfile_path(outfile):
         sys.stdout.write('Creating dir %s ...\n'  % path)
         os.makedirs(path)
 
-
 def convert_size_from_str(size_str):
     c_1GB = 1024*1024*1024
     factor = eval(size_str.split('G')[0])
     return factor*c_1GB
-
 
 def duration(seconds):
     seconds = long(round(seconds))
@@ -187,7 +185,45 @@ def set_root_style(stat=0, grid=0, PadTopMargin=0.08,
     ROOT.gStyle.SetOptStat(stat)
     ROOT.gStyle.SetStatColor(0)
     ROOT.gStyle.SetStatBorderSize(1)
+
+def search(allfile, root, target):
+    items = os.listdir(root)
+    for item in items:
+        if item[0] == '.':
+            continue
+        path = os.path.join(root, item)
+        if os.path.isdir(path):
+            search(allfile, path, target)
+        else:
+            if target in path:
+                allfile.append(path)
+    return allfile
     
+def group_files_by_num(name_list, num_total):
+    groups = []
+    group = []
+    num_sum = 0
+
+    for name in name_list:
+        if int(num_sum) < int(num_total):
+            group.append(name)
+            num_sum = num_sum + 1
+        else:
+            groups.append(group)
+            group = []
+            num_sum = 0
+            group.append(name)
+            num_sum = num_sum + 1
+
+        if name == name_list[-1]:
+            groups.append(group)    
+    return groups
+
+def ECMS(ecms):
+    E = 0.
+    if ecms == 4260:
+        E = 4257.97
+    return E
 
 # ---------------------------------------------
 # Class 
@@ -215,7 +251,6 @@ class UserFile(object):
 
     def input_data(self, data):
         self.data = data
-        
         
 class BossLogFile(UserFile):
     "Handle BOSS log file"

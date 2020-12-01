@@ -177,11 +177,26 @@ StatusCode pipi_jpsi::initialize()
 			status = m_tuple_pipi_ll->addItem ("m_jpsi",        m_jpsi);
 			status = m_tuple_pipi_ll->addItem ("m_cms_lepm",    m_cms_lepm);
 			status = m_tuple_pipi_ll->addItem ("m_cms_lepp",    m_cms_lepp);
-
 			status = m_tuple_pipi_ll->addItem ("p4_lp",  4,  p4_lp);
 			status = m_tuple_pipi_ll->addItem ("p4_lm",  4,  p4_lm);
 			status = m_tuple_pipi_ll->addItem ("p4_pip", 4,  p4_pip);
 			status = m_tuple_pipi_ll->addItem ("p4_pim", 4,  p4_pim);
+			status = m_tuple_pipi_ll->addItem ("m_chi2_svf",      m_chi2_svf);
+			status = m_tuple_pipi_ll->addItem ("m_L_svf",         m_L_svf);
+			status = m_tuple_pipi_ll->addItem ("m_Lerr_svf",      m_Lerr_svf);
+			status = m_tuple_pipi_ll->addItem ("m_ctau_svf",      m_ctau_svf);
+			status = m_tuple_pipi_ll->addItem ("m_Vr_pionp",    m_Vr_pionp);
+			status = m_tuple_pipi_ll->addItem ("m_Vr_pionm",    m_Vr_pionm);
+			status = m_tuple_pipi_ll->addItem ("m_Vr_lepp",     m_Vr_lepp);
+			status = m_tuple_pipi_ll->addItem ("m_Vr_lepm",     m_Vr_lepm);
+			status = m_tuple_pipi_ll->addItem ("m_Vz_pionp",    m_Vz_pionp);
+			status = m_tuple_pipi_ll->addItem ("m_Vz_pionm",    m_Vz_pionm);
+			status = m_tuple_pipi_ll->addItem ("m_Vz_lepp",     m_Vz_lepp);
+			status = m_tuple_pipi_ll->addItem ("m_Vz_lepm",     m_Vz_lepm);
+			status = m_tuple_pipi_ll->addItem ("m_cos_pionp",    m_cos_pionp);
+			status = m_tuple_pipi_ll->addItem ("m_cos_pionm",    m_cos_pionm);
+			status = m_tuple_pipi_ll->addItem ("m_cos_lepp",     m_cos_lepp);
+			status = m_tuple_pipi_ll->addItem ("m_cos_lepm",     m_cos_lepm);
 		}
 		else    
 		{ 
@@ -329,7 +344,6 @@ StatusCode pipi_jpsi::execute()
 	log << MSG::DEBUG <<"run, evtnum = "
 		<< m_runNo << " , "
 		<< m_evtNo <<endreq;
-	if ( m_evtNo % 1000 == 0 ) cout<<"event "<<m_evtNo<<endl;
 	Ncut0++;
 
 	SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
@@ -418,7 +432,6 @@ StatusCode pipi_jpsi::execute()
     //     }
     // }
 
-	if(debug_key) cout<<__LINE__<<endl;
 	HepLorentzVector ecms(m_Ecms*0.011, 0, 0, m_Ecms);
 
 	//
@@ -428,8 +441,6 @@ StatusCode pipi_jpsi::execute()
 
 	Vint iGood;
 	iGood.clear();
-
-	if(debug_key) cout<<__LINE__<<endl;
 
 	int nCharge = 0;
 
@@ -504,8 +515,6 @@ StatusCode pipi_jpsi::execute()
 	}
 
 	Ncut1++;
-
-	if(debug_key) cout<<__LINE__<<endl;
 
 	//Isolate photon selection from guoaq
 
@@ -603,7 +612,6 @@ StatusCode pipi_jpsi::execute()
 		return StatusCode::SUCCESS;
 	}
 	Ncut2++;
-	if(debug_key) cout<<__LINE__<<endl;
 
 	//
 	// check dedx infomation
@@ -630,8 +638,6 @@ StatusCode pipi_jpsi::execute()
 		}
 		m_tuple7->write();
 	}
-
-	if(debug_key) cout<<__LINE__<<endl;
 
 	//
 	// check TOF infomation
@@ -741,8 +747,6 @@ StatusCode pipi_jpsi::execute()
 		} // loop all charged track
 	}  // check tof
 
-	if(debug_key) cout<<__LINE__<<endl;
-
 	//Record the E/p ratio of charged tracks
 
 	Vp4 pep,pem,pmup,pmum,ppip,ppim;
@@ -795,6 +799,23 @@ StatusCode pipi_jpsi::execute()
 			{
 				RecMdcKalTrack::setPidType  (RecMdcKalTrack::electron);//PID can set to electron, muon, pion, kaon and proton;The default setting is pion
 				if(mdcTrk->charge() >0) {
+		            if(!(*itTrk)->isMdcTrackValid()) continue;
+		            RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();
+		            HepVector a = mdcTrk->helix();
+		            HepSymMatrix Ea = mdcTrk->err();
+		            HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+		            HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+		            VFHelix helixip(point0,a,Ea); 
+		            helixip.pivot(IP);
+		            HepVector vecipa = helixip.a();
+		            double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+		            double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+		            double  Rvphi0=vecipa[1];
+		            double  costheta0 = cos(mdcTrk -> theta());
+		            m_Vr_lepp = Rvxy0;
+		            m_Vz_lepp = Rvz0;
+		            m_cos_lepp = costheta0;
+
 					iep.push_back(iGood[i]);
 					HepLorentzVector ptrk;
 					ptrk.setPx(mdcTrk->px());
@@ -805,6 +826,22 @@ StatusCode pipi_jpsi::execute()
 					pep.push_back(ptrk);
 				}
 				else {
+		            RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();
+		            HepVector a = mdcTrk->helix();
+		            HepSymMatrix Ea = mdcTrk->err();
+		            HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+		            HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+		            VFHelix helixip(point0,a,Ea); 
+		            helixip.pivot(IP);
+		            HepVector vecipa = helixip.a();
+		            double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+		            double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+		            double  Rvphi0=vecipa[1];
+		            double  costheta0 = cos(mdcTrk -> theta());
+		            m_Vr_lepm = Rvxy0;
+		            m_Vz_lepm = Rvz0;
+		            m_cos_lepm = costheta0;
+
 					iem.push_back(iGood[i]);
 					HepLorentzVector ptrk;
 					ptrk.setPx(mdcTrk->px());
@@ -821,6 +858,22 @@ StatusCode pipi_jpsi::execute()
 			{
 				RecMdcKalTrack::setPidType  (RecMdcKalTrack::muon);//PID can set to electron, muon, pion, kaon and proton;The default setting is pion
 				if(mdcTrk->charge() >0) {
+		            RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();
+		            HepVector a = mdcTrk->helix();
+		            HepSymMatrix Ea = mdcTrk->err();
+		            HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+		            HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+		            VFHelix helixip(point0,a,Ea); 
+		            helixip.pivot(IP);
+		            HepVector vecipa = helixip.a();
+		            double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+		            double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+		            double  Rvphi0=vecipa[1];
+		            double  costheta0 = cos(mdcTrk -> theta());
+		            m_Vr_lepp = Rvxy0;
+		            m_Vz_lepp = Rvz0;
+		            m_cos_lepp = costheta0;
+
 					imup.push_back(iGood[i]);
 					HepLorentzVector ptrk;
 					ptrk.setPx(mdcTrk->px());
@@ -832,6 +885,22 @@ StatusCode pipi_jpsi::execute()
 					pmup.push_back(ptrk);
 				}
 				else {
+		            RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();
+		            HepVector a = mdcTrk->helix();
+		            HepSymMatrix Ea = mdcTrk->err();
+		            HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+		            HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+		            VFHelix helixip(point0,a,Ea); 
+		            helixip.pivot(IP);
+		            HepVector vecipa = helixip.a();
+		            double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+		            double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+		            double  Rvphi0=vecipa[1];
+		            double  costheta0 = cos(mdcTrk -> theta());
+		            m_Vr_lepm = Rvxy0;
+		            m_Vz_lepm = Rvz0;
+		            m_cos_lepm = costheta0;
+
 					imum.push_back(iGood[i]);
 					HepLorentzVector ptrk;
 					ptrk.setPx(mdcTrk->px());
@@ -848,6 +917,22 @@ StatusCode pipi_jpsi::execute()
 		{
 			RecMdcKalTrack::setPidType  (RecMdcKalTrack::pion);//PID can set to electron, muon, pion, kaon and proton;The default setting is pion
 			if(mdcTrk->charge() >0) {
+		        RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();
+		        HepVector a = mdcTrk->helix();
+		        HepSymMatrix Ea = mdcTrk->err();
+		        HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+		        HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+		        VFHelix helixip(point0,a,Ea); 
+		        helixip.pivot(IP);
+		        HepVector vecipa = helixip.a();
+		        double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+		        double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+		        double  Rvphi0=vecipa[1];
+		        double  costheta0 = cos(mdcTrk -> theta());
+		        m_Vr_pionp = Rvxy0;
+		        m_Vz_pionp = Rvz0;
+		        m_cos_pionp = costheta0;
+
 				ipip.push_back(iGood[i]);
 				HepLorentzVector ptrk;
 				ptrk.setPx(mdcTrk->px());
@@ -858,6 +943,22 @@ StatusCode pipi_jpsi::execute()
 
 				ppip.push_back(ptrk);
 			} else {
+		        RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();
+		        HepVector a = mdcTrk->helix();
+		        HepSymMatrix Ea = mdcTrk->err();
+		        HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+		        HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+		        VFHelix helixip(point0,a,Ea); 
+		        helixip.pivot(IP);
+		        HepVector vecipa = helixip.a();
+		        double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+		        double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+		        double  Rvphi0=vecipa[1];
+		        double  costheta0 = cos(mdcTrk -> theta());
+		        m_Vr_pionm = Rvxy0;
+		        m_Vz_pionm = Rvz0;
+		        m_cos_pionm = costheta0;
+
 				ipim.push_back(iGood[i]);
 				HepLorentzVector ptrk;
 				ptrk.setPx(mdcTrk->px());
@@ -879,7 +980,6 @@ StatusCode pipi_jpsi::execute()
 	int Num_pip=ipip.size();
 	int Num_pim=ipim.size();
 
-	if(debug_key) cout<<__LINE__<<endl;
 
 	//End record the E/p ratio of charged tracks
 
@@ -901,7 +1001,6 @@ StatusCode pipi_jpsi::execute()
 	if(Num_pip!=1||Num_pim!=1) return StatusCode::SUCCESS;
 
 	Ncut3++;
-	if(debug_key) cout<<__LINE__<<endl;
 
 	//*****************************************************************
 	//  Apply Kinematic 4C fit
@@ -996,14 +1095,12 @@ StatusCode pipi_jpsi::execute()
 		break;
 	}// for jpsi-->ee
 
-	if(debug_key) cout<<__LINE__<<endl;
 
 
 	//for jpsi-->mumu 
 	while(Num_mup==1&&Num_mum==1&&Num_pip==1&&Num_pim==1)
 	{
 		flag=-1;
-		if(debug_key) cout<<__LINE__<<endl;
 		RecMdcKalTrack *mupTrk = (*(evtRecTrkCol->begin()+imup[0]))->mdcKalTrack();
 		RecMdcKalTrack *mumTrk = (*(evtRecTrkCol->begin()+imum[0]))->mdcKalTrack();
 
@@ -1058,7 +1155,6 @@ StatusCode pipi_jpsi::execute()
 		//
 		//  Apply Kinematic 4C fit
 		// 
-		if(debug_key) cout<<__LINE__<<endl;
 		double chisq = 9999.;
 		KalmanKinematicFit * kmfit = KalmanKinematicFit::instance();
 		kmfit->init();
@@ -1130,7 +1226,6 @@ StatusCode pipi_jpsi::execute()
 
 	m_tuple_pipi_ll->write();
 
-	if(debug_key) cout<<__LINE__<<endl;
 
     // save all McTruth info
     m_idxmc = 100;
