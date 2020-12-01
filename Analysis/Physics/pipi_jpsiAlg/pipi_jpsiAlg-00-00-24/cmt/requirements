@@ -1,0 +1,24 @@
+package pipi_jpsiAlg
+author He Kanglin <hekl@ihep.ac.cn>
+
+use BesPolicy BesPolicy-*
+use GaudiInterface GaudiInterface-* External
+
+use DstEvent DstEvent-* Event
+use EventModel   EventModel-*  Event
+use EvtRecEvent EvtRecEvent-* Event
+
+use McTruth    McTruth-*      Event
+
+use VertexFit    VertexFit-*   Analysis 
+use ParticleID   ParticleID-*  Analysis
+
+use BesROOT      BesROOT-00-*     External
+use EmcRawEvent      EmcRawEvent-*       Emc
+use MdcRecEvent      MdcRecEvent-*       Mdc
+use RootIO           RootIO-*            Event
+
+apply_pattern component_library 
+library pipi_jpsiAlg  *.cxx  components/*.cxx
+
+apply_pattern declare_runtime files=*.txt
