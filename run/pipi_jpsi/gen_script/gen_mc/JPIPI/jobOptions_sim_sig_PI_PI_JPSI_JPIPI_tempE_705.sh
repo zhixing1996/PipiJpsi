@@ -11,7 +11,7 @@ SEED=3020023
 DIR_NAME="/besfs/groups/cal/dedx/$USER/bes/PipiJpsi/run/pipi_jpsi/rtraw/mc/JPIPI/$ENERGYPOINT/"
 mkdir -p $DIR_NAME
 
-echo "./jobOptions_sim_sig_PI_PI_JPIS_JPIPI_${ENERGYPOINT}.sh [NUM1] [NUM2] [NUM3]"
+echo "./jobOptions_sim_sig_PI_PI_JPSI_JPIPI_${ENERGYPOINT}.sh [NUM1] [NUM2] [NUM3]"
 echo "[NUM1]: the minimum number range of job generated"
 echo "[NUM2]: the maximum number range of job generated"
 echo "[NUM3]: the number of events in one job"
@@ -36,12 +36,13 @@ do
     echo "#include \"\$KKMCROOT/share/jobOptions_KKMC.txt\"" >> $SIM_NAME
 
     echo "KKMC.CMSEnergy = $CMS;" >> $SIM_NAME
-    echo "KKMC.BeamEnergySpread=0.0011;" >> $SIM_NAME
-    echo "KKMC.NumberOfEventPrinted=10;" >> $SIM_NAME
-    echo "KKMC.GeneratePsi4260=true;" >> $SIM_NAME
-    echo "KKMC.ResParameterPs6 = {$CMS, 74e-3, 0.47e-6};" >> $SIM_NAME
+    echo "KKMC.BeamEnergySpread = 0.0019;" >> $SIM_NAME
+    echo "KKMC.ThresholdCut = 3.376;" >> $SIM_NAME
+    echo "KKMC.NumberOfEventPrinted = 10;" >> $SIM_NAME
+    echo "KKMC.GeneratePsi4260 = true;" >> $SIM_NAME
     echo "KKMC.ParticleDecayThroughEvtGen = true;" >> $SIM_NAME
     echo "KKMC.RadiationCorrection = 1;" >> $SIM_NAME
+    echo "KKMC.TagISR = 1;" >> $SIM_NAME
     echo "KKMC.TagFSR = 1;" >> $SIM_NAME
     echo "KKMC.IHVP = 1;" >> $SIM_NAME
 

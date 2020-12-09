@@ -11,8 +11,7 @@ usage() {
     printf "\n\t%-5s\n" "./submit.sh [OPTION]" 
     printf "\nOPTIONS\n" 
     printf "\n\t%-9s  %-40s"  "0.1"       "[run on data sample for pipi_jpsi]"
-    printf "\n\t%-9s  %-40s"  "0.2"       "[run on inclusive MC sample for pipi_jpsi]"
-    printf "\n\t%-9s  %-40s"  "0.3"       "[generate and run on signal MC sample]"
+    printf "\n\t%-9s  %-40s"  "0.2"       "[generate and run on signal MC sample]"
     printf "\n\n" 
 }
 
@@ -30,16 +29,8 @@ usage_0_1() {
 
 usage_0_2() {
     printf "\n\t%-9s  %-40s"  ""          ""
-    printf "\n\t%-9s  %-40s"  "0.2.1"     "Generate Condor jobs on signal MC(simulation) ---- 1"
-    printf "\n\t%-9s  %-40s"  "0.2.2"     "Test for signal MC(simulation)"
-    printf "\n\t%-9s  %-40s"  "0.2.3"     "Submit Condor jobs on signal MC(simulation) ---- 2"
-    printf "\n\t%-9s  %-40s"  "0.2.4"     "Generate Condor jobs on signal MC(reconstruction) ---- 1"
-    printf "\n\t%-9s  %-40s"  "0.2.5"     "Test for signal MC(reconstruction)"
-    printf "\n\t%-9s  %-40s"  "0.2.6"     "Submit Condor jobs on signal MC(reconstruction) ---- 2"
-    printf "\n\t%-9s  %-40s"  "0.2.7"     "Split signal MC sample with each group 5G(rootfile)"
-    printf "\n\t%-9s  %-40s"  "0.2.8"     "Generate Condor jobs on signal MC(rootfile) ---- 1"
-    printf "\n\t%-9s  %-40s"  "0.2.9"     "Test for signal MC(rootfile)"
-    printf "\n\t%-9s  %-40s"  "0.2.10"    "Submit Condor jobs on signal MC(rootfile) ---- 2"
+    printf "\n\t%-9s  %-40s"  "0.2.1"     "Generate MC samples ---- Simulation && Reconstruction"
+    printf "\n\t%-9s  %-40s"  "0.2.2"     "Generate MC samples ---- Event Selection"
     printf "\n\t%-9s  %-40s"  ""           ""
     printf "\n"
 }
@@ -102,9 +93,15 @@ case $option in
            ./syn_Data_pipi_jpsi.sh 703
 	       ;;
 
-    0.1.6) echo "Apply cuts..."
-           mkdir -p /besfs/users/$USER/bes3ws2020/data12/psip
-           ./python/apply_cuts.py /scratchfs/bes/$USER/bes3ws2020/data12/psip/data12_psip.root /besfs/users/$USER/bes3ws2020/data12/psip/data12_psip.root
+    0.1.6) echo "Apply cuts ..."
+           cd ./run/pipi_jpsi/gen_script
+           ./apply_cuts_Data_pipi_jpsi.sh 703
+           mv Apply_Cuts_Data_703 ../logfile
+           cd ../logfile
+           chmod u+x Apply_Cuts_Data_703
+           bash Apply_Cuts_Data_703
+           rm -r Apply_Cuts_Data_703
+           cd /besfs/groups/cal/dedx/$USER/bes/PipiJpsi
 	       ;;
 
 esac
@@ -129,13 +126,43 @@ case $option in
            fi
 	       ;;
 
-    0.4.2) echo "Generate MC samples ---- Event Selection ..."
+    0.2.2) echo "Generate MC samples ---- Event Selection ..."
            echo "which MC sample do you want to select?"
            echo "    JPIPI       --> e+e- --> pi-pi-J/psi"
            read opt
            if [ $opt == "JPIPI" ]; then
                cd /besfs/groups/cal/dedx/$USER/bes/PipiJpsi/run/pipi_jpsi/gen_script/gen_mc/JPIPI
                ./sub_Ana_PI_PI_JPSI.sh 703
+           fi
+	       ;;
+
+    0.2.3) echo "Synthesize inclusive MC samples root files ..."
+           cd ./run/pipi_jpsi/gen_script
+           echo "which MC sample do you want to synthesize?"
+           echo "    JPIPI       --> e+e- --> pi-pi-J/psi"
+           read opt
+           if [ $opt == "JPIPI" ]; then
+               ./syn_MC_pipi_jpsi.sh 703 JPIPI
+           else
+               echo "Please add the MC simulation joboption files!"
+           fi
+	       ;;
+
+    0.2.4) echo "Apply cuts ..."
+           cd ./run/pipi_jpsi/gen_script
+           echo "which MC sample do you want to synthesize?"
+           echo "    JPIPI       --> e+e- --> pi-pi-J/psi"
+           read opt
+           if [ $opt == "JPIPI" ]; then
+               ./apply_cuts_MC_pipi_jpsi.sh 703 JPIPI
+               mv Apply_Cuts_JPIPI_703 ../logfile
+               cd ../logfile
+               chmod u+x Apply_Cuts_JPIPI_703
+               bash Apply_Cuts_JPIPI_703
+               rm -r Apply_Cuts_JPIPI_703
+               cd /besfs/groups/cal/dedx/$USER/bes/PipiJpsi
+           else
+               echo "Please add the MC simulation joboption files!"
            fi
 	       ;;
 
