@@ -31,6 +31,8 @@ usage_0_2() {
     printf "\n\t%-9s  %-40s"  ""          ""
     printf "\n\t%-9s  %-40s"  "0.2.1"     "Generate MC samples ---- Simulation && Reconstruction"
     printf "\n\t%-9s  %-40s"  "0.2.2"     "Generate MC samples ---- Event Selection"
+    printf "\n\t%-9s  %-40s"  "0.2.3"     "Synthesize MC sample root files"
+    printf "\n\t%-9s  %-40s"  "0.2.4"     "Apply cuts"
     printf "\n\t%-9s  %-40s"  ""           ""
     printf "\n"
 }

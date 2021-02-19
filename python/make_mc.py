@@ -65,7 +65,7 @@ def main():
         f.write('\n')
         f.write('ApplicationMgr.DLLs += {"pipi_jpsiAlg"};\n')
         f.write('ApplicationMgr.TopAlg +={ "pipi_jpsi" };\n')
-        f.write('pipi_jpsi.Ecms = '+str(ECMS(float(ecms)))+';\n')
+        f.write('pipi_jpsi.Ecms = '+str(ECMS(float(ecms))/1000.)+';\n')
         f.write('\n')
         f.write('// Input REC or DST file name\n')
         f.write('EventCnvSvc.digiRootInputFile = {\n')
